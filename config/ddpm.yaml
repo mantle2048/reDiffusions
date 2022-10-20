@@ -1,0 +1,44 @@
+n_itr: 1
+
+agent: ddpm
+dataset: anime-faces
+
+seed: 0
+num_samples: 11
+
+no_gpu: False
+which_gpu: 0
+image_log_freq: null
+tabular_log_freq: 1
+param_log_freq: null
+
+data_config:
+    dataset_path: ???
+    image_size: 96
+    batch_size: 256
+    augment_horizontal_flip: True
+
+logger_config:
+    exp_prefix: ${agent}_${dataset}
+    seed: ${seed}
+    snapshot_mode: last
+
+policy_config:
+    image_size: ${data_config.image_size}
+    objective: pred_noise
+    noise_timesteps: 1000
+    loss_type: l2
+    beta_schedule: linear
+    sampling_timesteps: 1000
+    lr: 1e-3
+
+# disable hypra log
+defaults:  
+  - _self_  
+  - override hydra/hydra_logging: disabled  
+  - override hydra/job_logging: disabled  
+  
+hydra:  
+  output_subdir: null  
+  run:  
+    dir: .
