@@ -21,7 +21,7 @@ import torch
 import tempfile
 import shelve
 
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Union
 from .tabulate import tabulate
 from diffusion import user_config as conf
 from omegaconf import DictConfig, OmegaConf
@@ -243,13 +243,13 @@ class Logger(object):
         yield
         self.pop_tabular_prefix()
 
-    def log_variant(self, file_name, variant_data: Dict, mode='a'):
+    def log_variant(self, file_name, variant_data: DictConfig, mode='a'):
         self.log(f"{file_name}:", with_prefix=False)
         self.log(f"{OmegaConf.to_yaml(variant_data)}", with_prefix=False)
         file_name = osp.join(self._snapshot_dir, file_name)
         mkdir_p(os.path.dirname(file_name))
         with open(file_name, mode) as f:
-            json.dump(variant_data, f, indent=2, sort_keys=True, cls=MyEncoder)
+            OmegaConf.save(variant_data, f.name)
 
     def record_tabular_misc_stat(self, key, values, placement='front'):
         if placement == 'front':

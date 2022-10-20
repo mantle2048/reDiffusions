@@ -5,6 +5,7 @@ import aim
 
 from enum import Enum
 from typing import Dict
+from omegaconf import DictConfig
 from moviepy import editor as mpy # this line for 'moviepy' correctly run
 from matplotlib import pyplot as plt
 from diffusion import user_config as conf
@@ -58,7 +59,7 @@ class AimLogger(Logger):
         # super(AimLogger, self).log_variant(file_name, variant_data)
         super().log_variant(file_name, variant_data, **kwargs)
         assert isinstance(file_name, str), 'file_name must be std'
-        assert isinstance(variant_data, dict), 'file_name must be dict'
+        assert isinstance(variant_data, (dict, DictConfig)) , 'file_type must be dict or DictConfig'
         file_name = osp.splitext(file_name)[-2] # Remove the extension name which Aim does not support.
         self._aim_run[file_name] = safe_dict(variant_data)
 

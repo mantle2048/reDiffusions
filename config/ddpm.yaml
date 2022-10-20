@@ -1,4 +1,4 @@
-n_itr: 1
+n_itr: 100
 
 agent: ddpm
 dataset: anime-faces
@@ -14,7 +14,7 @@ param_log_freq: null
 
 data_config:
     dataset_path: ???
-    image_size: 96
+    image_size: 32
     batch_size: 256
     augment_horizontal_flip: True
 
@@ -30,7 +30,7 @@ policy_config:
     loss_type: l2
     beta_schedule: linear
     sampling_timesteps: 1000
-    lr: 1e-3
+    lr: 1e-4
 
 # disable hypra log
 defaults:  

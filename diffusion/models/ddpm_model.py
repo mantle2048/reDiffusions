@@ -8,6 +8,7 @@ from typing import Dict
 from functools import partial, namedtuple
 
 from diffusion.infrastructure.utils.utils import extract, identity, default
+import diffusion.infrastructure.utils.pytorch_util as ptu
 from .unet import Unet
 
 # normalization functions
@@ -42,7 +43,9 @@ class GaussianDiffusion(nn.Module):
 
     def __init__(self, config: Dict):
         super().__init__()
-        self.model = Unet(config['image_size'])
+        self.model = Unet(
+            config['image_size'],
+        )
         self.optim = Adam(self.parameters(), lr = config['lr'], betas=(0.9, 0.99))
         assert not \
             (type(self) == GaussianDiffusion and self.model.channels != self.model.out_dim)
@@ -205,7 +208,7 @@ class GaussianDiffusion(nn.Module):
         else:
             raise ValueError(f'invalid loss type {self.loss_type}')
 
-    def p_losses(self, x_start, t, noise = None):
+    def p_losses(self, x_start, t, noise = None) -> torch.Tensor:
         b, c, h, w = x_start.shape
         noise = default(noise, torch.randn_like(x_start))
 
@@ -229,11 +232,13 @@ class GaussianDiffusion(nn.Module):
         else:
             raise ValueError(f'unknown objective {self.objective}')
 
-        self.optim.zero_grad()
         loss = self.loss_fn(model_out, target)
+
+        self.optim.zero_grad()
+        loss.backward()
         self.optim.step()
 
-        return loss.mean()
+        return loss
 
     def update(self, img, *args, **kwargs) -> Dict:
         b, c, h, w, device, img_size,  = *img.shape, img.device, self.image_size
@@ -243,5 +248,6 @@ class GaussianDiffusion(nn.Module):
         img = normalize_to_neg_one_to_one(img)
         train_log = {}
         loss = self.p_losses(img, t, *args, **kwargs)
-        train_log.update(loss=loss)
+        train_log.update(Loss=ptu.to_numpy(loss))
+
         return train_log

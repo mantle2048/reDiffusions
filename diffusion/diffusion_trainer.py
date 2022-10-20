@@ -58,7 +58,7 @@ class DiffusionTrainer:
             ## log and save config_json
             ###########################
             if itr == 1:
-                self.logger.log_variant('config.json', self.config)
+                self.logger.log_variant('config.yaml', self.config)
 
             ## log/save
             if self.logtabular:
@@ -78,8 +78,8 @@ class DiffusionTrainer:
         # sample and save images from ema model
         if self.logimage:
             print('\nSampling and saving images')
-            all_image = self.agent.sample(batch_size=self.config['num_samples'])
-            self.logger.log_images() #TODO
+            # all_image = self.agent.sample(batch_size=self.config['num_samples'])
+            # self.logger.log_images() #TODO
         #######################
 
         # save eval tabular
