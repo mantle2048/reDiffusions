@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Dict
 from omegaconf import DictConfig
 from moviepy import editor as mpy # this line for 'moviepy' correctly run
+from torchvision.utils import make_grid, save_image
 from matplotlib import pyplot as plt
 from diffusion import user_config as conf
 from diffusion.infrastructure.loggers.base_logger import Logger, mkdir_p
@@ -66,9 +67,14 @@ class AimLogger(Logger):
     def log_scalar(self, scalar, name, step_, context=None):
         self._aim_run.track(value=scalar, name=name, step=step_, context=context)
 
-    def log_image(self, image, name, step_, context=None):
-        assert(len(image.shape) == 3)  # [C, H, W]
-        self._aim_run.track(value=aim.Image(image), name=name, step=step_, context=context)
+    def log_image(self, image, name, step, context=None):
+        if len(image.shape) == 4:  # [B, C, H, W]
+            image = make_grid(image, nrow=10)
+        self._image_log_dir = osp.join(self._snapshot_dir, 'image')
+        mkdir_p(self._image_log_dir)
+        image_log_path = osp.join(self._image_log_dir, f'{name}-{step}.png')
+        save_image(image, image_log_path)
+        self._aim_run.track(value=aim.Image(image), name=name, step=step, context=context)
 
     def log_video(self, n_video_frames, name, step_, fps=10, context=None):
         assert len(n_video_frames.shape) == 5, "Need [N, T, C, H, W] input tensor for video logging!"

@@ -60,17 +60,11 @@ class DiffusionTrainer:
             if itr == 1:
                 self.logger.log_variant('config.yaml', self.config)
 
-            ## log/save
-            if self.logtabular:
-                ## perform tabular and video
-                self.perform_logging(itr, train_log)
+            ###########################
+            ## log tabular & image & param
+            ###########################
+            self.perform_logging(itr, train_log)
 
-            if self.logparam:
-                self.logger.save_itr_params(itr, self.agent.get_weights())
-                self.logger.save_extra_data(
-                    self.agent.get_statistics(),
-                    file_name='statistics.pkl',
-                )
         self.logger.close()
 
     def perform_logging(self, itr, train_log: Dict):
@@ -78,8 +72,9 @@ class DiffusionTrainer:
         # sample and save images from ema model
         if self.logimage:
             print('\nSampling and saving images')
-            # all_image = self.agent.sample(batch_size=self.config['num_samples'])
-            # self.logger.log_images() #TODO
+            all_image = self.agent.sample(batch_size=self.config['num_samples'])
+            ## all_image: [B, C, H, W]
+            self.logger.log_image(all_image, name='image', step=itr)
         #######################
 
         # save eval tabular
@@ -90,6 +85,10 @@ class DiffusionTrainer:
             # TODO FID Score
             self.logger.record_dict(train_log)
             self.logger.dump_tabular(with_prefix=True, with_timestamp=False)
+
+        if self.logparam:
+            self.logger.save_itr_params(itr, self.agent.checkpoint())
+
 
     def _refresh_logger_flags(self, itr):
 

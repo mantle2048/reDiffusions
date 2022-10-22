@@ -1,4 +1,4 @@
-n_itr: 100
+n_itr: 1
 
 agent: ddpm
 dataset: anime-faces
@@ -8,15 +8,15 @@ num_samples: 11
 
 no_gpu: False
 which_gpu: 0
-image_log_freq: null
-tabular_log_freq: 1
+image_log_freq: 1000
+tabular_log_freq: 100
 param_log_freq: null
 
 data_config:
     dataset_path: ???
     image_size: 32
     batch_size: 256
-    augment_horizontal_flip: True
+    augment_horizontal_flip: False
 
 logger_config:
     exp_prefix: ${agent}_${dataset}

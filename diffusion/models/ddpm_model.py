@@ -189,7 +189,7 @@ class GaussianDiffusion(nn.Module):
         return img
 
     @torch.no_grad()
-    def sample(self, batch_size = 16):
+    def sample(self, batch_size = 16) -> torch.Tensor:
         return self.p_sample_loop((batch_size, self.channels, self.image_size, self.image_size))
 
     def q_sample(self, x_start, t, noise=None):
