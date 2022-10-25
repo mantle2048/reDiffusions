@@ -87,7 +87,7 @@ class DiffusionTrainer:
             self.logger.dump_tabular(with_prefix=True, with_timestamp=False)
 
         if self.logparam:
-            self.logger.save_itr_params(itr, self.agent.checkpoint())
+            self.logger.save_itr_params(itr, self.agent.checkpoint(itr))
 
 
     def _refresh_logger_flags(self, itr):

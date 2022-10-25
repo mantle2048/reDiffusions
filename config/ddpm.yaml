@@ -4,19 +4,19 @@ agent: ddpm
 dataset: anime-faces
 
 seed: 0
-num_samples: 11
+num_samples: 25
 
 no_gpu: False
 which_gpu: 0
-image_log_freq: 1000
-tabular_log_freq: 100
-param_log_freq: null
+image_log_freq: 10000
+tabular_log_freq: 1000
+param_log_freq: 10000
 
 data_config:
     dataset_path: ???
-    image_size: 32
-    batch_size: 256
-    augment_horizontal_flip: False
+    image_size: 48
+    batch_size: 100
+    augment_horizontal_flip: True
 
 logger_config:
     exp_prefix: ${agent}_${dataset}
@@ -25,10 +25,10 @@ logger_config:
 
 policy_config:
     image_size: ${data_config.image_size}
-    objective: pred_noise
+    objective: pred_x0
     noise_timesteps: 1000
-    loss_type: l2
-    beta_schedule: linear
+    loss_type: huber
+    beta_schedule: cosine
     sampling_timesteps: 1000
     lr: 1e-4
 

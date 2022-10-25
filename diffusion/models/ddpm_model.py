@@ -90,6 +90,7 @@ class GaussianDiffusion(nn.Module):
         register_buffer('sqrt_alphas_cumprod', torch.sqrt(alphas_cumprod))
         register_buffer('sqrt_one_minus_alphas_cumprod', torch.sqrt(1. - alphas_cumprod))
         register_buffer('log_one_minus_alphas_cumprod', torch.log(1. - alphas_cumprod))
+        register_buffer('sqrt_recip_alphas', torch.sqrt(1. / alphas))
         register_buffer('sqrt_recip_alphas_cumprod', torch.sqrt(1. / alphas_cumprod))
         register_buffer('sqrt_recipm1_alphas_cumprod', torch.sqrt(1. / alphas_cumprod - 1))
 
@@ -136,7 +137,7 @@ class GaussianDiffusion(nn.Module):
             x_start = self.predict_start_from_noise(x, t, pred_noise)
             x_start = maybe_clip(x_start)
 
-        elif self.objective == 'pred_x_0':
+        elif self.objective == 'pred_x0':
             x_start = model_output
             x_start = maybe_clip(x_start)
             pred_noise = self.predict_noise_from_start(x, t, x_start)
@@ -192,6 +193,22 @@ class GaussianDiffusion(nn.Module):
     def sample(self, batch_size = 16) -> torch.Tensor:
         return self.p_sample_loop((batch_size, self.channels, self.image_size, self.image_size))
 
+    @torch.no_grad()
+    def interpolate(self, x1, x2, t = None, lam = 0.5):
+        b, *_, device = *x1.shape, x.device
+        t = default(t, self.noise_timesteps - 1)
+
+        assert x1.shape == x2.shape
+        t_batched = torch.stack([torch.tensor(t, device=device)] * b)
+        xt1, xt2 = map(lambda x: self.q_sample(x, t = t_batched), (x1, x2))
+
+        img = (1 - lam) * xt1 + lam * xt2
+        for i in tqdm(reversed(range(0, t)), desc = 'interpolation sample timestep', total = t):
+            img = self.p_sample(img, torch.full((b,), i, device=device, dtype=torch.long))
+
+        return img
+
+
     def q_sample(self, x_start, t, noise=None):
         noise = default(noise, torch.randn_like(x_start))
 
@@ -205,6 +222,8 @@ class GaussianDiffusion(nn.Module):
             return F.l1_loss
         elif self.loss_type == 'l2':
             return F.mse_loss
+        elif self.loss_type == "huber":
+            return F.smooth_l1_loss
         else:
             raise ValueError(f'invalid loss type {self.loss_type}')
 

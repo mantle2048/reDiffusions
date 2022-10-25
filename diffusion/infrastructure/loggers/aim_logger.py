@@ -69,7 +69,7 @@ class AimLogger(Logger):
 
     def log_image(self, image, name, step, context=None):
         if len(image.shape) == 4:  # [B, C, H, W]
-            image = make_grid(image, nrow=10)
+            image = make_grid(image, nrow = int(np.sqrt(image.shape[0])))
         self._image_log_dir = osp.join(self._snapshot_dir, 'image')
         mkdir_p(self._image_log_dir)
         image_log_path = osp.join(self._image_log_dir, f'{name}-{step}.png')
