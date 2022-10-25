@@ -152,8 +152,8 @@ class AimLogger(Logger):
 
     def save_itr_params(self, itr, params):
         super().save_itr_params(itr, params)
-        for name, param in params.items():
-            self.log_distribution(param, name, itr, context={'mode': 'Itr'})
+        # for name, param in params.items():
+        #     self.log_distribution(param, name, itr, context={'mode': 'Itr'})
 
     def close(self):
         self._aim_run.close()
