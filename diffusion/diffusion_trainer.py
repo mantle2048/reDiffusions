@@ -69,14 +69,6 @@ class DiffusionTrainer:
 
     def perform_logging(self, itr, train_log: Dict):
 
-        # sample and save images from ema model
-        if self.logimage:
-            print('\nSampling and saving images')
-            all_image = self.agent.sample(batch_size=self.config['num_samples'])
-            ## all_image: [B, C, H, W]
-            self.logger.log_image(all_image, name='image', step=itr)
-        #######################
-
         # save eval tabular
         if self.logtabular:
             # decide what to log
@@ -85,6 +77,14 @@ class DiffusionTrainer:
             # TODO FID Score
             self.logger.record_dict(train_log)
             self.logger.dump_tabular(with_prefix=True, with_timestamp=False)
+
+        # sample and save images from ema model
+        if self.logimage:
+            print('\nSampling and saving images')
+            all_image = self.agent.sample(batch_size=self.config['num_samples'])
+            ## all_image: [B, C, H, W]
+            self.logger.log_image(all_image, name='image', step=itr)
+        #######################
 
         if self.logparam:
             self.logger.save_itr_params(itr, self.agent.checkpoint(itr))
